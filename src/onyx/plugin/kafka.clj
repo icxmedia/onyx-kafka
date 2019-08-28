@@ -15,7 +15,7 @@
                                                        poll! seek-to-offset!] :as cp]
             [onyx.log.curator :as zk]
             [onyx.compression.nippy :refer [zookeeper-compress zookeeper-decompress]]
-            [taoensso.timbre :as log :refer [fatal info]]
+            [taoensso.timbre :as log :refer [fatal info warn]]
             [onyx.static.uuid :refer [random-uuid]]
             [onyx.static.default-vals :refer [arg-or-default]]
             [onyx.peer.pipeline-extensions :as p-ext]
@@ -142,13 +142,16 @@
       (when-let [offset (highest-offset-to-commit @pending-commits)]
         (let [k (checkpoint-name group-id topic kpartition)
               data {:offset offset}]
+          (warn "commit-loop" (str "Commiting checkpoint offset " data))
           (commit! log data k)
           (swap! pending-commits (fn [coll] (remove (fn [k] (<= k offset)) coll)))))
       (when-not (Thread/interrupted) 
         (recur)))
     (catch InterruptedException e
+      (warn "commit-loop" (str "Commit loop interrupted: " e))
       (throw e))
     (catch Throwable e
+      (warn "commit-loop" (str "Fatal exception in commit loop: " e))
       (fatal e)))) 
 
 (defn check-num-peers-equals-partitions 
