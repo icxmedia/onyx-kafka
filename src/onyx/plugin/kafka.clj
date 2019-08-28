@@ -137,16 +137,16 @@
       (when-let [offset (highest-offset-to-commit @pending-commits)]
         (let [k (checkpoint-name group-id topic kpartition)
               data {:offset offset}]
-          (warn "commit-loop" (str "Commiting checkpoint offset " data))
+          (warn "commit-loop" (str "Commiting checkpoint offset " data " for topic: " topic))
           (commit! log data k)
           (swap! pending-commits (fn [coll] (remove (fn [k] (<= k offset)) coll)))))
       (when-not (Thread/interrupted) 
         (recur)))
     (catch InterruptedException e
-      (warn "commit-loop" (str "Commit loop interrupted: " e))
+      (warn "commit-loop" (str "Commit loop interrupted: " e " for topic: " topic))
       (throw e))
     (catch Throwable e
-      (warn "commit-loop" (str "Fatal exception in commit loop: " e))
+      (warn "commit-loop" (str "Fatal exception in commit loop: " e " for topic " topic))
       (fatal e)))) 
 
 (defn check-num-peers-equals-partitions 
