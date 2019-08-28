@@ -128,12 +128,7 @@
                        :zk-addr zk-addr})))))
 
 (defn highest-offset-to-commit [offsets]
-  (->> (sort offsets)
-       (partition-all 2 1)
-       (partition-by #(- (or (second %) (first %)) (first %)))
-       (first)
-       (last)
-       (last)))
+  (when-let [coll (seq offsets)] (apply max coll)))
 
 (defn commit-loop [log group-id topic kpartition commit-interval pending-commits]
   (try
