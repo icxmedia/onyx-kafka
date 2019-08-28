@@ -137,7 +137,7 @@
       (when-let [offset (highest-offset-to-commit @pending-commits)]
         (let [k (checkpoint-name group-id topic kpartition)
               data {:offset offset}]
-          (warn "commit-loop" (str "Commiting checkpoint offset " data " for topic: " topic))
+          (warn "commit-loop" (str "Commiting checkpoint offset " (merge data {:topic topic})))
           (commit! log data k)
           (swap! pending-commits (fn [coll] (remove (fn [k] (<= k offset)) coll)))))
       (when-not (Thread/interrupted) 
